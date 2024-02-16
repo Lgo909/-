@@ -12,19 +12,20 @@ class AuthController extends Controller
         return view("admin.auth.login");
     }
 
-    public function login (Request $request)
+    public function login(Request $request)
     {
         $data = $request->validate([
             "email" => ["required", "email", "string"],
             "password" => ["required"],
         ]);
 
-        if(auth("admin")->attempt($data)) {
+        if (auth("admin")->attempt($data)) {
             return redirect(route("admin.posts.index"));
         }
 
-        return redirect(route("admin.login"))->withErrors(["email" => "Пользователь не найден, либо данные введены не верно"]);
-
+        return redirect(route("admin.login"))->withErrors(
+            ["email" => "Пользователь не найден, либо данные введены не верно"],
+        );
     }
 
     public function logout()
