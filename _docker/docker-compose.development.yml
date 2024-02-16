@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mailpit:
+    container_name: ${COMPOSE_PROJECT_NAME}-mailpit
+    image: ${COMPOSE_PROJECT_NAME}-mailpit
+    build:
+      context: ./mailpit
+      dockerfile: Dockerfile
+      args:
+        TIME_ZONE: ${TIME_ZONE}
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    environment:
+      MP_MAX_MESSAGES: ${MP_MAX_MESSAGES}
+      MP_SMTP_AUTH_ACCEPT_ANY: ${MP_SMTP_AUTH_ACCEPT_ANY}
+      MP_SMTP_AUTH_ALLOW_INSECURE: ${MP_SMTP_AUTH_ALLOW_INSECURE}
+    networks:
+      - network

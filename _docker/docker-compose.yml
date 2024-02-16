@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+
+  php-fpm-nginx:
+    container_name: ${COMPOSE_PROJECT_NAME}-php-fpm-nginx
+    image: ${COMPOSE_PROJECT_NAME}-php-fpm-nginx
+    restart: always
+    build:
+      dockerfile: php-fpm-nginx/Dockerfile
+      args:
+        TIME_ZONE: ${TIME_ZONE}
+    ports:
+      - "${NGINX_PORT}:80"
+    environment:
+      PHP_POOL_NAME: php-fpm-nginx
+      PHP_DATE_TIMEZONE: ${PHP_DATE_TIMEZONE}
+      PHP_MAX_EXECUTION_TIME: ${PHP_MAX_EXECUTION_TIME}
+      PHP_MEMORY_LIMIT: ${PHP_MEMORY_LIMIT}
+      PHP_PM_MAX_CHILDREN: ${PHP_PM_MAX_CHILDREN}
+      PHP_PM_MAX_SPARE_SERVERS: ${PHP_PM_MAX_SPARE_SERVERS}
+      PHP_POST_MAX_SIZE: ${PHP_POST_MAX_SIZE}
+      PHP_UPLOAD_MAX_FILE_SIZE: ${PHP_UPLOAD_MAX_FILE_SIZE}
+      AUTORUN_ENABLED: ${AUTORUN_ENABLED}
+      AUTORUN_LARAVEL_STORAGE_LINK: ${AUTORUN_LARAVEL_STORAGE_LINK}
+      AUTORUN_LARAVEL_MIGRATION: ${AUTORUN_LARAVEL_MIGRATION}
+      SSL_MODE: ${SSL_MODE}
+    volumes:
+      - ../:/var/www/html/:cached
+      - ${LOGS_DIR}/nginx:/var/log/nginx
+      - ${LOGS_DIR}/php-fpm:/var/log/php-fpm
+    networks:
+      - network
+
+  php-cli:
+    container_name: ${COMPOSE_PROJECT_NAME}-php-cli
+    image: ${COMPOSE_PROJECT_NAME}-php-cli
+    build:
+      dockerfile: php-cli/Dockerfile
+      args:
+        INSTALL_NODE: ${INSTALL_NODE}
+        NODE_VERSION: ${NODE_VERSION}
+        TIME_ZONE: ${TIME_ZONE}
+    volumes:
+      - ../:/var/www/html/:cached
+    tty: true
+    networks:
+      - network
+
+  mariadb:
+    container_name: ${COMPOSE_PROJECT_NAME}-mariadb
+    image: ${COMPOSE_PROJECT_NAME}-mariadb
+    build:
+      dockerfile: mysql/Dockerfile
+      args:
+        TIME_ZONE: ${TIME_ZONE}
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    networks:
+      - network
+    depends_on:
+      - php-fpm-nginx
+
+  meilisearch:
+    container_name: ${COMPOSE_PROJECT_NAME}-meilisearch
+    image: ${COMPOSE_PROJECT_NAME}-meilisearch
+    build:
+      dockerfile: meilisearch/Dockerfile
+      args:
+        TIME_ZONE: ${TIME_ZONE}
+    restart: always
+    environment:
+      MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY}
+    volumes:
+      - ${LOGS_DIR}/meilisearch:/var/log/meilisearch
+      - ${DATA_DIR}/meilisearch:/var/lib/meilisearch
+    ports:
+      - "7700:7700"
+    networks:
+      - network
+    depends_on:
+      - mariadb
+
+networks:
+  network:
+    driver: bridge
+    name: ${NETWORK_NAME}

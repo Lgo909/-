@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Получаем путь к текущему скрипту
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Проверяем, существует ли файл "php"
+if [ ! -x "${__dir}/php" ]; then
+    echo "Error: php not found or not executable."
+    exit 1
+fi
+
+# Выполняем команду "php" и обрабатываем ошибки
+if ! "${__dir}/php" artisan "$@"; then
+    echo "Error: Failed to execute the command."
+    exit 1
+fi

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Получаем путь к текущему скрипту
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Переходим в директорию скрипта, если не удается, завершаем выполнение
+cd "${__dir}" || { echo "Error: Unable to change directory." >&2; exit 1; }
+
+# Проверяем, доступен ли docker-compose
+if ! command -v docker-compose &> /dev/null; then
+    echo "Error: docker-compose is not installed or not in the PATH."
+    exit 1
+fi
+
+# Если переданы аргументы скрипту...
+if [ $# -gt 0 ]; then
+    if [[ "$1" == "art" || "$1" == "artisan" ]]; then
+        shift 1
+        CMD='php artisan '"$@"
+    elif [[ "$1" == "composer" ]]; then
+        shift 1
+        CMD='composer '"$@"
+    elif [[ "$1" == "test" ]]; then
+        shift 1
+        CMD='composer test -- '"$@"
+    else
+        CMD="$*"
+    fi
+
+    # Выполняем команду внутри контейнера
+    docker-compose exec php-cli bash -c "${CMD}"
+else
+    # Если аргументов нет, выводим информацию о контейнерах
+    docker-compose ps
+fi
