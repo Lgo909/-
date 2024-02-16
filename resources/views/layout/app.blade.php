@@ -6,13 +6,13 @@
 
     <title>@yield('title')</title>
 
-    <link @vite(['resources/css/app.css', 'resources/js/app.js'])>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 </head>
 <body>
 
-    @yield('contents')
+@yield('contents')
 
-    <script @vite(['resources/css/app.css', 'resources/js/app.js'])></script>
+<script @vite(['resources/css/app.css', 'resources/js/app.js'])></script>
 </body>
 </html>
